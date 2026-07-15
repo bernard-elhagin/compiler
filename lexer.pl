@@ -23,6 +23,8 @@ use enum qw(
     CloseParen
     BinaryOperator
     SemiColon
+    DoubleQuote
+    SingleQuote
     Reserved
 );
 # ]]]
@@ -49,6 +51,11 @@ sub isint { # [[[
 }
 # ]]]
 
+sub isskippable { # [[[
+    return $_[0] =~ m/^\s$/;
+}
+# ]]]
+
 sub tokenize { # [[[
     my @src = split //, shift;
     my @tokens;
@@ -67,6 +74,12 @@ sub tokenize { # [[[
         elsif ($src[0] eq ';') {
             push @tokens, token(shift @src, SemiColon);
         }
+        elsif ($src[0] eq '"') {
+            push @tokens, token(shift @src, DoubleQuote);
+        }
+        elsif ($src[0] eq "'") {
+            push @tokens, token(shift @src, SingleQuote);
+        }
         elsif ($src[0] =~ m!^[-+*/]$!) {
             push @tokens, token(shift @src, BinaryOperator);
         } else {
@@ -81,7 +94,6 @@ sub tokenize { # [[[
                 push @tokens, token($num, Number);
                 next;
             }
-
             elsif (isalpha($src[0])) {
                 my $ident = shift @src;
                 while (@src && isalpha($src[0])) {
@@ -91,8 +103,15 @@ sub tokenize { # [[[
                 push @tokens, token($ident, $_reserved{$ident} ? Reserved : Identifier);
                 next;
             }
-
-            shift @src;
+            elsif (isskippable($src[0])) {
+                shift @src;
+                next;
+            }
+            else {
+                print "Unrecognized character: $src[0]\n";
+                shift @src;
+                next;
+            }
         }
     }
 
@@ -102,7 +121,8 @@ sub tokenize { # [[[
 }
 # ]]]
 
-tokenize(<<HERE);
-    asd(fasdf 7 - 5)
-    exit 6;
-HERE
+open (my $file, '<', './test.txt') or die $!;
+
+my $F = do { local $/; <$file> };
+
+tokenize($F);
