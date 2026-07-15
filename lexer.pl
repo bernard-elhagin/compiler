@@ -2,14 +2,16 @@
 use strict;
 use warnings;
 
-use Data::Dumper;
-
 BEGIN {
     push @INC, '.';
 }
 
+use Data::Dumper;
+
 use Token;
 use Reserved;
+use Statement;
+use Program;
 
 my %_reserved = %Reserved::reserved;
 
@@ -26,8 +28,13 @@ use enum qw(
     DoubleQuote
     SingleQuote
     Reserved
+    EOF
 );
+
 # ]]]
+
+my $temp = [];
+my $prog = Program->new('Program', $temp);
 
 sub token { # [[[
     my ($val, $type) = @_;
@@ -108,12 +115,12 @@ sub tokenize { # [[[
                 next;
             }
             else {
-                print "Unrecognized character: $src[0]\n";
-                shift @src;
-                next;
+                die "Unrecognized character: $src[0]\n";
             }
         }
     }
+
+    push @tokens, token("EndOfFile", EOF);
 
     print Dumper @tokens;
 

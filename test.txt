@@ -2,3 +2,4 @@ let x = 45;
 print "Hello world";
 say 'Hello world';
 exit 69;
+&
