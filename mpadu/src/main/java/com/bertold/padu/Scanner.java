@@ -65,8 +65,32 @@ class Scanner {
 				line++;
 				break;
 
-			default: Padu.error(line, "Unexpected character."); break;
+			case '"': string(); break;
+
+			default:
+			   Padu.error(line, "Unexpected character.");
+			   break;
 		}
+	}
+
+	private void string() {
+		while (peek() != '"' && !isAtEnd()) {
+			if (peek() == '\n') line++;
+			advance();
+		}
+
+		if (isAtEnd()) {
+			Padu.error(line, "Unterminated string.");
+
+			return;
+		}
+
+		// found the closing "
+		advance();
+
+		// strip surrounding " for purposes of token
+		String value = source.substring(start + 1, current - 1);
+		addToken(STRING, value);
 	}
 
 	private boolean match(char expected) {
